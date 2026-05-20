@@ -1,0 +1,9 @@
+2026-05-19 21:56:56,799 — === Pipeline started ===
+2026-05-19 21:56:56,799 — Loading train.csv
+2026-05-19 21:56:56,823 — Loaded 891 rows
+2026-05-19 21:56:56,823 — Cleaning...
+2026-05-19 21:56:56,836 — Clean done. Shape: (891, 8)
+2026-05-19 21:56:56,836 — Training...
+2026-05-19 21:56:57,053 — Accuracy: 0.8268
+2026-05-19 21:56:57,111 — Saved model and metrics. Status: success
+2026-05-19 21:56:57,111 — === Pipeline finished ===
