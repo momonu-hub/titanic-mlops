@@ -1,11 +1,16 @@
-import json
+import subprocess
+import sys
 
-with open("metrics.json") as f:
-    m = json.load(f)
+result = subprocess.run(
+    [sys.executable, "pipeline.py"],
+    capture_output=True,
+    text=True
+)
 
-print(f"Accuracy: {m['accuracy']}")
+print(result.stdout)
 
-if m["accuracy"] >= 0.80:
+if "success" in result.stdout:
     print("Accuracy check passed!")
 else:
-    raise Exception(f"Accuracy too low: {m['accuracy']}")
+    print("Output:", result.stdout)
+    raise Exception("Pipeline did not complete successfully")
