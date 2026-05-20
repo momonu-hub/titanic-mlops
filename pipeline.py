@@ -8,31 +8,32 @@ import logging
 import json
 from datetime import datetime
 
-# Logging — every run recorded with timestamp
 logging.basicConfig(
     filename="pipeline.log",
     level=logging.INFO,
-    format="%(asctime)s — %(message)s"
+    format="%(asctime)s - %(message)s"
 )
 
 def load_data():
-    logging.info("Loading train.csv")
+    print("Step 1 - Loading data...")
     df = pd.read_csv("train.csv")
+    print(f"Loaded {len(df)} rows")
     logging.info(f"Loaded {len(df)} rows")
     return df
 
 def clean_data(df):
-    logging.info("Cleaning...")
+    print("Step 2 - Cleaning data...")
     df["Age"].fillna(df["Age"].median(), inplace=True)
     df["Embarked"].fillna("S", inplace=True)
     df.drop(columns=["Cabin","Name","Ticket","PassengerId"], inplace=True)
     df["Sex"] = df["Sex"].map({"male": 0, "female": 1})
     df["Embarked"] = df["Embarked"].map({"S": 0, "C": 1, "Q": 2})
-    logging.info(f"Clean done. Shape: {df.shape}")
+    print(f"Cleaned. Shape: {df.shape}")
+    logging.info(f"Cleaned. Shape: {df.shape}")
     return df
 
 def train_model(df):
-    logging.info("Training...")
+    print("Step 3 - Training model...")
     X = df.drop(columns=["Survived"])
     y = df["Survived"]
     X_train, X_test, y_train, y_test = train_test_split(
@@ -40,14 +41,13 @@ def train_model(df):
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
     acc = accuracy_score(y_test, model.predict(X_test))
+    print(f"Step 4 - Accuracy: {acc:.2%}")
     logging.info(f"Accuracy: {acc:.4f}")
-    print(f"Accuracy: {acc:.2%}")
     return model, acc
 
 def save_results(model, acc):
-    # Save model
+    print("Step 5 - Saving model and metrics...")
     joblib.dump(model, "titanic_model.pkl")
-    # Save metrics as JSON — Prometheus will read this
     metrics = {
         "accuracy": round(acc, 4),
         "timestamp": datetime.now().isoformat(),
@@ -55,7 +55,7 @@ def save_results(model, acc):
     }
     with open("metrics.json", "w") as f:
         json.dump(metrics, f)
-    logging.info(f"Saved model and metrics. Status: {metrics['status']}")
+    logging.info(f"Saved. Status: {metrics['status']}")
     print(f"Done. Status: {metrics['status']}")
 
 if __name__ == "__main__":
