@@ -1,0 +1,49 @@
+name: Titanic ML Pipeline
+
+on:
+  push:
+    branches: [ main ]      # runs every time you push to GitHub
+  schedule:
+    - cron: '0 9 * * 1'    # also runs every Monday 9AM automatically
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest  # GitHub gives you a free server
+
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install libraries
+      run: |
+        pip install pandas numpy scikit-learn joblib
+
+    - name: Run pipeline
+      run: |
+        python pipeline.py
+
+    - name: Check accuracy
+      run: |
+        python -c "
+import json
+with open('metrics.json') as f:
+    m = json.load(f)
+print('Accuracy:', m['accuracy'])
+assert m['accuracy'] >= 0.80, 'Accuracy too low!'
+print('Passed!')
+"
+
+    - name: Upload model to S3
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: us-east-1
+      run: |
+        pip install awscli
+        aws s3 cp titanic_model.pkl s3://titanic-mlops-bucket/models/titanic_model.pkl
